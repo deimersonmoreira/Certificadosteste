@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certificação Acadêmica</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f7fa;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #004d7a;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #004d7a;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .logo img {
+      width: 120px;
+      height: auto;
+    }
+
+    .slogan {
+      text-align: center;
+      font-style: italic;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .autenticacao {
+      background-color: #eef4f8;
+      border-left: 4px solid #004d7a;
+      padding: 12px 16px;
+      font-family: monospace;
+      font-size: 14px;
+      margin-top: 30px;
+      word-break: break-word;
+    }
+
+    .qr-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+
+    #qrcode {
+      width: 120px;
+      height: 120px;
+    }
+
+    .link-verificacao {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .link-verificacao a {
+      color: #004d7a;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .link-verificacao a::before {
+      content: "🔒 ";
+      color: green;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-content {
+      background-color: #e8fef1;
+      border: 2px solid #00b37e;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 400px;
+      text-align: center;
+      color: #2e7d59;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    .popup-content .check {
+      font-size: 50px;
+      color: #00b37e;
+    }
+
+    .popup-content h2 {
+      color: #00796b;
+      margin: 10px 0 5px;
+    }
+
+    .popup-content p {
+      font-size: 15px;
+    }
+
+    .popup-content button {
+      margin-top: 20px;
+      padding: 8px 16px;
+      background-color: #004d7a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div id="formulario" class="container">
+  <div class="logo">
+    <img src="https://cdn-icons-png.flaticon.com/512/906/906175.png" alt="Logo Fictícia">
+  </div>
+  <h1>Consulta e Emissão de Certificação</h1>
+  <div class="slogan">"Scientia. Humanitas. Progressus."</div>
+
+  <label for="nivel">Nível de ensino:</label>
+  <select id="nivel" onchange="atualizarCursos()">
+    <option value="">Selecione</option>
+    <option value="graduacao">Graduação</option>
+    <option value="pos">Pós-graduação</option>
+  </select>
+
+  <label for="curso">Curso:</label>
+  <select id="curso">
+    <option value="">Selecione o nível primeiro</option>
+  </select>
+
+  <label for="nome">Nome completo:</label>
+  <input type="text" id="nome" required />
+
+  <label for="cpf">CPF:</label>
+  <input type="text" id="cpf" required />
+
+  <label for="matricula">Matrícula:</label>
+  <input type="text" id="matricula" required />
+
+  <button onclick="gerarCertificacao()">Emitir Certificação</button>
+</div>
+
+<div id="certificacao" class="container hidden">
+  <div class="logo">
+    <img src="https://cdn-icons-png.flaticon.com/512/906/906175.png" alt="Logo Fictícia">
+  </div>
+  <h2>Universidade Nacional do Brasil</h2>
+  <div class="slogan">"Scientia. Humanitas. Progressus."</div>
+
+  <p id="textoCertificacao"></p>
+
+  <p><em><small>*Esta certidão pode ser utilizada para fins legais, como o exercício do direito à meia-entrada em eventos culturais e esportivos, conforme previsto na Lei Federal nº 12.933/2013.*</small></em></p>
+
+  <div class="autenticacao">
+    Código de Autenticação: <strong id="codigoAutenticacao"></strong><br>
+    Data de emissão: <span id="dataHoje"></span>
+  </div>
+
+  <div class="qr-container">
+    <div id="qrcode"></div>
+    <div class="link-verificacao">
+      Verifique a autenticidade:<br>
+      <a onclick="abrirPopup()">https://brasiluniversidade.com.br/verificar?codigo=...</a>
+    </div>
+  </div>
+
+  <p style="margin-top:40px; text-align:right">Brasília, <span id="dataHojeRepetida"></span></p>
+  <p style="text-align:right"><strong>Secretaria Acadêmica – Universidade Nacional do Brasil</strong></p>
+
+  <button onclick="gerarPDF()">Gerar PDF</button>
+</div>
+
+<div id="popup" class="popup">
+  <div class="popup-content">
+    <div class="check">✅</div>
+    <h2>Certidão Válida</h2>
+    <p>Este documento foi verificado e está autenticado digitalmente pelo sistema acadêmico.</p>
+    <button onclick="fecharPopup()">Fechar</button>
+  </div>
+</div>
+
+<script>
+  const cursos = {
+    graduacao: ["Direito", "Medicina", "Enfermagem", "Psicologia", "Administração", "Engenharia Civil", "Engenharia de Produção", "Arquitetura e Urbanismo", "Educação Física", "Pedagogia", "Ciências Contábeis", "Ciência da Computação", "Jornalismo", "Publicidade e Propaganda", "Farmácia", "Biomedicina", "Nutrição", "Fisioterapia", "Serviço Social", "História"],
+    pos: ["Direito Estudantil", "Direito Constitucional", "Gestão Pública", "Educação Inclusiva", "Psicopedagogia", "Administração Hospitalar", "Gestão Escolar", "Neuropsicologia", "Docência do Ensino Superior", "MBA em Marketing", "MBA em Finanças", "Psicanálise", "Direito Tributário", "Direito do Trabalho", "Gestão de Projetos", "Direito Civil", "Segurança do Trabalho", "Engenharia de Segurança", "Saúde Coletiva", "Perícia Criminal"]
+  };
+
+  function atualizarCursos() {
+    const nivel = document.getElementById("nivel").value;
+    const cursoSelect = document.getElementById("curso");
+    cursoSelect.innerHTML = "<option value=''>Selecione</option>";
+    if (cursos[nivel]) {
+      cursos[nivel].forEach(curso => {
+        const opt = document.createElement("option");
+        opt.value = curso;
+        opt.textContent = curso;
+        cursoSelect.appendChild(opt);
+      });
+    }
+  }
+
+  function gerarCertificacao() {
+    const nome = document.getElementById('nome').value;
+    const cpf = document.getElementById('cpf').value;
+    const matricula = document.getElementById('matricula').value;
+    const nivel = document.getElementById('nivel').value;
+    const curso = document.getElementById('curso').value;
+
+    const hoje = new Date();
+    const dataFormatada = hoje.toLocaleDateString('pt-BR');
+
+    const duracoes = { graduacao: 4, pos: 2 };
+    const anosCurso = duracoes[nivel] || 2;
+
+    const ingressoAno = hoje.getFullYear() - 1;
+    const conclusaoAno = ingressoAno + anosCurso;
+
+    const codigo = `UNB-${matricula}-${cpf.replace(/\\D/g, '')}-${hoje.getFullYear()}${hoje.getMonth()+1}${hoje.getDate()}`;
+    const url = `https://brasiluniversidade.com.br/verificar?codigo=${codigo}`;
+
+    document.getElementById('dataHoje').textContent = dataFormatada;
+    document.getElementById('dataHojeRepetida').textContent = dataFormatada;
+    document.getElementById('codigoAutenticacao').textContent = codigo;
+    QRCode.toCanvas(document.getElementById("qrcode"), codigo, { width: 120 });
+
+    const texto = `Certifico, para os devidos fins, que <strong>${nome}</strong>, CPF nº <strong>${cpf}</strong>, encontra-se regularmente matriculado no curso de <strong>${curso}</strong>, modalidade <strong>${nivel === 'pos' ? 'Pós-graduação (EaD)' : 'Graduação (Presencial)'}</strong>, da <strong>Universidade Nacional do Brasil</strong>, sob o número de matrícula <strong>${matricula}</strong>. O referido estudante possui data de ingresso em <strong>${ingressoAno}</strong> e previsão de conclusão para o ano de <strong>${conclusaoAno}</strong>.`;
+
+    document.getElementById('textoCertificacao').innerHTML = texto;
+    document.getElementById('formulario').classList.add('hidden');
+    document.getElementById('certificacao').classList.remove('hidden');
+  }
+
+  function gerarPDF() {
+    const element = document.getElementById("certificacao");
+    const opt = {
+      margin: [1.5, 1.5, 1.5, 1.5],
+      filename: 'Certificacao-Academica.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 3, useCORS: true },
+      jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().from(element).set(opt).save();
+  }
+
+  function abrirPopup() {
+    document.getElementById("popup").style.display = "flex";
+  }
+
+  function fecharPopup() {
+    document.getElementById("popup").style.display = "none";
+  }
+</script>
+
+</body>
+</html>
